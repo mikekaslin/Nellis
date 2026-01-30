@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nellis Tracker">
+  <title>Nellis Auction Tracker</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #111827; color: #f3f4f6; min-height: 100vh; padding: 12px; font-size: 14px; }
+    .container { max-width: 500px; margin: 0 auto; padding-bottom: 40px; }
+    h1 { font-size: 20px; color: #f97316; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .card { background: #1f2937; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+    .search-bar { display: flex; gap: 8px; margin-bottom: 8px; }
+    .search-bar input { flex: 1; }
+    .price-row { display: flex; gap: 8px; }
+    .price-row input { width: 80px; }
+    .price-row select { flex: 1; }
+    input, select { background: #111827; border: 1px solid #374151; border-radius: 6px; padding: 10px 12px; color: white; font-size: 14px; }
+    input:focus, select:focus { outline: none; border-color: #f97316; }
+    input::placeholder { color: #6b7280; }
+    button { border: none; border-radius: 6px; padding: 10px 16px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.2s; }
+    .btn-orange { background: #f97316; color: white; }
+    .btn-orange:hover { background: #ea580c; }
+    .btn-orange:disabled { background: #4b5563; cursor: not-allowed; }
+    .btn-blue { background: #2563eb; color: white; }
+    .btn-blue:hover { background: #1d4ed8; }
+    .btn-green { background: #16a34a; color: white; }
+    .btn-green:hover { background: #15803d; }
+    .btn-red { background: #dc2626; color: white; }
+    .btn-red:hover { background: #b91c1c; }
+    .btn-gray { background: #374151; color: white; }
+    .btn-gray:hover { background: #4b5563; }
+    .btn-icon { padding: 8px; background: transparent; color: #9ca3af; }
+    .btn-icon:hover { color: #f87171; }
+    .priority-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .chip { background: rgba(202, 138, 4, 0.2); border: 1px solid rgba(202, 138, 4, 0.5); color: #fde047; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; }
+    .chip:hover { background: rgba(202, 138, 4, 0.3); }
+    .tabs { display: flex; gap: 4px; background: #1f2937; border-radius: 8px; padding: 4px; margin-bottom: 12px; }
+    .tab { flex: 1; padding: 10px; border-radius: 6px; font-size: 12px; font-weight: 500; text-align: center; cursor: pointer; background: transparent; color: #9ca3af; }
+    .tab.active { background: #f97316; color: white; }
+    .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .filter { padding: 6px 12px; border-radius: 20px; font-size: 12px; background: #1f2937; color: #9ca3af; cursor: pointer; border: none; }
+    .filter.active { background: #f97316; color: white; }
+    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+    .stat { background: #1f2937; border-radius: 8px; padding: 12px; text-align: center; }
+    .stat-value { font-size: 20px; font-weight: bold; }
+    .stat-value.blue { color: #60a5fa; }
+    .stat-value.green { color: #4ade80; }
+    .stat-value.red { color: #f87171; }
+    .stat-value.orange { color: #fb923c; }
+    .stat-label { font-size: 11px; color: #6b7280; }
+    .search-item { background: #1f2937; border-radius: 8px; padding: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #374151; }
+    .search-item.priority { border-left-color: #eab308; }
+    .search-left { display: flex; align-items: center; gap: 10px; }
+    .search-right { display: flex; align-items: center; gap: 6px; }
+    .star { cursor: pointer; color: #4b5563; font-size: 18px; }
+    .star.active { color: #eab308; }
+    .search-name { font-weight: 500; }
+    .search-meta { font-size: 12px; color: #6b7280; }
+    .item-card { background: #1f2937; border-radius: 8px; padding: 12px; margin-bottom: 8px; border-left: 4px solid #3b82f6; }
+    .item-card.won { border-left-color: #22c55e; }
+    .item-card.lost { border-left-color: #ef4444; }
+    .item-card.over-budget { border-left-color: #eab308; }
+    .item-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .item-name { font-weight: 500; display: flex; align-items: center; gap: 6px; }
+    .item-lot { font-size: 12px; color: #6b7280; }
+    .item-header-right { display: flex; align-items: center; gap: 6px; }
+    .time-badge { font-size: 12px; padding: 4px 8px; border-radius: 4px; background: #374151; display: flex; align-items: center; gap: 4px; }
+    .time-badge.urgent { background: #7f1d1d; color: #fca5a5; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+    .bid-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .bid-box { background: #111827; border-radius: 6px; padding: 10px; }
+    .bid-label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+    .bid-value { font-size: 18px; font-weight: bold; }
+    .bid-value.orange { color: #fb923c; }
+    .bid-total { font-size: 11px; color: #6b7280; margin-top: 4px; }
+    .bid-total .green { color: #4ade80; }
+    .bid-total .red { color: #f87171; }
+    .bid-input { width: 100%; background: #1f2937; border: 1px solid #374151; border-radius: 4px; padding: 6px 8px; color: white; font-size: 16px; font-weight: bold; }
+    .action-row { display: flex; gap: 8px; }
+    .action-row button { flex: 1; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 100; }
+    .modal { background: #1f2937; border-radius: 12px; padding: 20px; width: 100%; max-width: 360px; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .modal-header h2 { font-size: 18px; font-weight: bold; }
+    .modal-close { background: none; border: none; color: #9ca3af; font-size: 24px; cursor: pointer; padding: 0; line-height: 1; }
+    .form-group { margin-bottom: 12px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 12px; color: #9ca3af; margin-bottom: 6px; }
+    .form-group input, .form-group select { width: 100%; }
+    .fee-preview { background: #111827; border-radius: 6px; padding: 10px; margin-bottom: 12px; font-size: 13px; }
+    .fee-preview span { color: #9ca3af; }
+    .fee-preview strong { color: #fb923c; }
+    .empty { text-align: center; padding: 40px; color: #6b7280; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧡 Nellis Tracker</h1>
+    <div class="card">
+      <div class="search-bar">
+        <input type="text" id="quickSearch" placeholder="Search Nellis...">
+        <button class="btn-orange" onclick="doQuickSearch()">🔍</button>
+      </div>
+      <div class="price-row">
+        <input type="number" id="quickMin" placeholder="$Min">
+        <input type="number" id="quickMax" placeholder="$Max">
+        <select id="quickSort">
+          <option value="ending">Ending Soon</option>
+          <option value="newest">Newest</option>
+          <option value="priceLow">Price ↑</option>
+          <option value="priceHigh">Price ↓</option>
+        </select>
+      </div>
+    </div>
+    <div class="priority-chips" id="priorityChips"></div>
+    <div class="tabs">
+      <div class="tab active" id="tabSearches" onclick="switchTab('searches')">🔍 Searches</div>
+      <div class="tab" id="tabTracking" onclick="switchTab('tracking')">❤️ Tracking</div>
+    </div>
+    <div id="searchesTab">
+      <div class="header-row">
+        <div class="filters" id="categoryFilters"></div>
+        <button class="btn-orange" onclick="openAddSearch()">➕</button>
+      </div>
+      <div id="searchesList"></div>
+    </div>
+    <div id="trackingTab" class="hidden">
+      <div class="stats" id="statsBar"></div>
+      <div class="header-row">
+        <div class="filters" id="itemFilters"></div>
+        <button class="btn-orange" onclick="openAddItem()">➕</button>
+      </div>
+      <div id="itemsList"></div>
+    </div>
+  </div>
+  <div class="modal-overlay hidden" id="addSearchModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Add Search</h2>
+        <button class="modal-close" onclick="closeAddSearch()">×</button>
+      </div>
+      <div class="form-group">
+        <label>Keywords *</label>
+        <input type="text" id="newKeyword" placeholder="e.g., Milwaukee, Dyson">
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Min Price</label><input type="number" id="newMinPrice" placeholder="0"></div>
+        <div class="form-group"><label>Max Price</label><input type="number" id="newMaxPrice" placeholder="No limit"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Category</label><select id="newCategory"><option>Tools</option><option>Electronics</option><option>Appliances</option><option>Furniture</option><option>Outdoor</option><option>Pallets</option><option selected>Other</option></select></div>
+        <div class="form-group"><label>Sort By</label><select id="newSort"><option value="ending">Ending Soon</option><option value="newest">Newest</option><option value="priceLow">Price ↑</option><option value="priceHigh">Price ↓</option></select></div>
+      </div>
+      <button class="btn-orange" style="width:100%;padding:14px;" onclick="saveSearch()">Save Search</button>
+    </div>
+  </div>
+  <div class="modal-overlay hidden" id="addItemModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Add Item</h2>
+        <button class="modal-close" onclick="closeAddItem()">×</button>
+      </div>
+      <div class="form-group"><label>Item Name *</label><input type="text" id="itemName" placeholder="e.g., Milwaukee M18 Drill"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Lot #</label><input type="text" id="itemLot" placeholder="Optional"></div>
+        <div class="form-group"><label>From Search</label><select id="itemFromSearch"><option value="">None</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Current Bid</label><input type="number" id="itemCurrentBid" placeholder="0"></div>
+        <div class="form-group"><label>Your Max Bid *</label><input type="number" id="itemMaxBid" placeholder="100" oninput="updateFeePreview()"></div>
+      </div>
+      <div class="fee-preview hidden" id="feePreview"><span>With fees: </span><strong id="feeTotal">$0.00</strong></div>
+      <div class="form-group"><label>Auction End Time</label><input type="datetime-local" id="itemEndTime"></div>
+      <button class="btn-orange" style="width:100%;padding:14px;" onclick="saveItem()">Add Item</button>
+    </div>
+  </div>
+  <script>
+    const STORAGE_KEY='nellis-tracker-v2',BUYERS_PREMIUM=0.15,TAX_RATE=0.0825;let searches=[],items=[],categoryFilter='all',itemFilter='all';function loadData(){try{const e=localStorage.getItem(STORAGE_KEY);if(e){const t=JSON.parse(e);searches=t.searches||[],items=t.items||[]}else searches=[{id:1,keyword:'Milwaukee',minPrice:'',maxPrice:'150',category:'Tools',priority:!0,sort:'ending'},{id:2,keyword:'DeWalt',minPrice:'',maxPrice:'100',category:'Tools',priority:!0,sort:'ending'},{id:3,keyword:'pallet',minPrice:'',maxPrice:'250',category:'Pallets',priority:!1,sort:'priceLow'},{id:4,keyword:'Dyson',minPrice:'',maxPrice:'200',category:'Appliances',priority:!1,sort:'ending'}]}catch(e){console.error(e)}}function saveData(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({searches:searches,items:items}))}catch(e){console.error(e)}}function buildUrl(e,t,n,i){const s=new URLSearchParams;e&&s.set('searchVal',e),t&&s.set('minPrice',t),n&&s.set('maxPrice',n);const a={ending:'endingSoon',newest:'newest',priceLow:'priceLow',priceHigh:'priceHigh'};return i&&s.set('sort',a[i]||'endingSoon'),'https://www.nellisauction.com/search?'+s.toString()}function calcTotal(e){const t=e*BUYERS_PREMIUM,n=e+t;return n+n*TAX_RATE}function formatMoney(e){return'$'+e.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',')}function getTimeRemaining(e){const t=new Date(e).getTime()-Date.now();if(t<=0)return{text:'Ended',urgent:!1,expired:!0};const n=Math.floor(t/864e5),i=Math.floor(t%864e5/36e5),s=Math.floor(t%36e5/6e4),a=Math.floor(t%6e4/1e3);return n>0?{text:n+'d '+i+'h',urgent:!1}:i>0?{text:i+'h '+s+'m',urgent:i<2}:{text:s+'m '+a+'s',urgent:!0}}function doQuickSearch(){const e=document.getElementById('quickSearch').value.trim();if(!e)return;const t=document.getElementById('quickMin').value,n=document.getElementById('quickMax').value,i=document.getElementById('quickSort').value;window.open(buildUrl(e,t,n,i),'_blank')}document.getElementById('quickSearch').addEventListener('keydown',e=>{'Enter'===e.key&&doQuickSearch()});function switchTab(e){document.getElementById('tabSearches').classList.toggle('active','searches'===e),document.getElementById('tabTracking').classList.toggle('active','tracking'===e),document.getElementById('searchesTab').classList.toggle('hidden','searches'!==e),document.getElementById('trackingTab').classList.toggle('hidden','tracking'!==e)}function renderPriorityChips(){const e=document.getElementById('priorityChips'),t=searches.filter(e=>e.priority);e.innerHTML=t.map(e=>`<div class="chip" onclick="openSearchUrl(${e.id})">${e.keyword}${e.maxPrice?' ≤$'+e.maxPrice:''}</div>`).join('')}function renderCategoryFilters(){const e=[...new Set(searches.map(e=>e.category))],t=document.getElementById('categoryFilters');t.innerHTML=`<button class="filter ${'all'===categoryFilter?'active':''}" onclick="setCategoryFilter('all')">All</button>`+e.map(e=>`<button class="filter ${categoryFilter===e?'active':''}" onclick="setCategoryFilter('${e}')">${e}</button>`).join('')}function setCategoryFilter(e){categoryFilter=e,renderCategoryFilters(),renderSearches()}function renderSearches(){const e=searches.filter(e=>'all'===categoryFilter||e.category===categoryFilter).sort((e,t)=>(t.priority?1:0)-(e.priority?1:0)),t=document.getElementById('searchesList');0===e.length?t.innerHTML='<div class="empty">No searches yet. Tap ➕ to add one!</div>':t.innerHTML=e.map(e=>`<div class="search-item ${e.priority?'priority':''}"><div class="search-left"><span class="star ${e.priority?'active':''}" onclick="togglePriority(${e.id})">★</span><div><div class="search-name">${e.keyword}</div><div class="search-meta">${e.maxPrice?'≤$'+e.maxPrice+' • ':''}${e.category}</div></div></div><div class="search-right"><button class="btn-blue" onclick="openSearchUrl(${e.id})">Open</button><button class="btn-icon" onclick="deleteSearch(${e.id})">🗑</button></div></div>`).join('')}function openSearchUrl(e){const t=searches.find(t=>t.id===e);t&&window.open(buildUrl(t.keyword,t.minPrice,t.maxPrice,t.sort),'_blank')}function togglePriority(e){const t=searches.find(t=>t.id===e);t&&(t.priority=!t.priority,saveData(),renderAll())}function deleteSearch(e){searches=searches.filter(t=>t.id!==e),saveData(),renderAll()}function renderStats(){const e=items.filter(e=>'watching'===e.status).length,t=items.filter(e=>'won'===e.status).length,n=items.filter(e=>'lost'===e.status).length,i=items.filter(e=>'won'===e.status).reduce((e,t)=>e+calcTotal(t.currentBid),0);document.getElementById('statsBar').innerHTML=`<div class="stat"><div class="stat-value blue">${e}</div><div class="stat-label">Watch</div></div><div class="stat"><div class="stat-value green">${t}</div><div class="stat-label">Won</div></div><div class="stat"><div class="stat-value red">${n}</div><div class="stat-label">Lost</div></div><div class="stat"><div class="stat-value orange">$${Math.round(i)}</div><div class="stat-label">Spent</div></div>`}function renderItemFilters(){document.getElementById('itemFilters').innerHTML=['all','watching','won','lost'].map(e=>`<button class="filter ${itemFilter===e?'active':''}" onclick="setItemFilter('${e}')">${e.charAt(0).toUpperCase()+e.slice(1)}</button>`).join('')}function setItemFilter(e){itemFilter=e,renderItemFilters(),renderItems()}function renderItems(){const e=items.filter(e=>'all'===itemFilter||e.status===itemFilter),t=document.getElementById('itemsList');0===e.length?t.innerHTML='<div class="empty">No items yet. Find something on Nellis!</div>':t.innerHTML=e.map(e=>{const t=e.endTime?getTimeRemaining(e.endTime):null,n=calcTotal(e.currentBid),i=calcTotal(e.maxBid),s=e.currentBid<=e.maxBid;let a='item-card';return'won'===e.status?a+=' won':'lost'===e.status?a+=' lost':s||(a+=' over-budget'),`<div class="${a}"><div class="item-header"><div><div class="item-name">${e.name} ${'won'===e.status?'🏆':''}</div>${e.lotNumber?`<div class="item-lot">Lot #${e.lotNumber}</div>`:''}</div><div class="item-header-right">${t&&!t.expired&&'watching'===e.status?`<div class="time-badge ${t.urgent?'urgent':''}">⏱ ${t.text}</div>`:''}<button class="btn-icon" onclick="deleteItem(${e.id})">🗑</button></div></div><div class="bid-grid"><div class="bid-box"><div class="bid-label">Current Bid</div>${'watching'===e.status?`<input type="number" class="bid-input" value="${e.currentBid}" onchange="updateBid(${e.id}, this.value)">`:`<div class="bid-value">${formatMoney(e.currentBid)}</div>`}<div class="bid-total">Total: <span class="${s?'green':'red'}">${formatMoney(n)}</span></div></div><div class="bid-box"><div class="bid-label">Your Max</div><div class="bid-value orange">${formatMoney(e.maxBid)}</div><div class="bid-total">Total: ${formatMoney(i)}</div></div></div>${'watching'===e.status?`<div class="action-row"><button class="btn-green" onclick="setStatus(${e.id}, 'won')">Won</button><button class="btn-red" onclick="setStatus(${e.id}, 'lost')">Lost</button></div>`:`<button class="btn-gray" style="width:100%" onclick="setStatus(${e.id}, 'watching')">Back to Watching</button>`}</div>`}).join('')}function updateBid(e,t){const n=items.find(t=>t.id===e);n&&(n.currentBid=parseFloat(t)||0,saveData(),renderItems())}function setStatus(e,t){const n=items.find(t=>t.id===e);n&&(n.status=t,saveData(),renderAll())}function deleteItem(e){items=items.filter(t=>t.id!==e),saveData(),renderAll()}function openAddSearch(){document.getElementById('addSearchModal').classList.remove('hidden')}function closeAddSearch(){document.getElementById('addSearchModal').classList.add('hidden')}function openAddItem(){const e=document.getElementById('itemFromSearch');e.innerHTML='<option value="">None</option>'+searches.map(e=>`<option value="${e.keyword}">${e.keyword}</option>`).join(''),document.getElementById('addItemModal').classList.remove('hidden')}function closeAddItem(){document.getElementById('addItemModal').classList.add('hidden')}function saveSearch(){const e=document.getElementById('newKeyword').value.trim();if(!e)return alert('Please enter keywords');searches.push({id:Date.now(),keyword:e,minPrice:document.getElementById('newMinPrice').value,maxPrice:document.getElementById('newMaxPrice').value,category:document.getElementById('newCategory').value,sort:document.getElementById('newSort').value,priority:!1}),saveData(),renderAll(),closeAddSearch(),document.getElementById('newKeyword').value='',document.getElementById('newMinPrice').value='',document.getElementById('newMaxPrice').value=''}function updateFeePreview(){const e=parseFloat(document.getElementById('itemMaxBid').value)||0,t=document.getElementById('feePreview'),n=document.getElementById('feeTotal');e>0?(t.classList.remove('hidden'),n.textContent=formatMoney(calcTotal(e))):t.classList.add('hidden')}function saveItem(){const e=document.getElementById('itemName').value.trim(),t=parseFloat(document.getElementById('itemMaxBid').value);if(!e)return alert('Please enter item name');if(!t)return alert('Please enter max bid');items.push({id:Date.now(),name:e,lotNumber:document.getElementById('itemLot').value.trim(),fromSearch:document.getElementById('itemFromSearch').value,currentBid:parseFloat(document.getElementById('itemCurrentBid').value)||0,maxBid:t,endTime:document.getElementById('itemEndTime').value,status:'watching'}),saveData(),renderAll(),closeAddItem(),document.getElementById('itemName').value='',document.getElementById('itemLot').value='',document.getElementById('itemCurrentBid').value='',document.getElementById('itemMaxBid').value='',document.getElementById('itemEndTime').value='',document.getElementById('feePreview').classList.add('hidden')}function renderAll(){renderPriorityChips(),renderCategoryFilters(),renderSearches(),renderStats(),renderItemFilters(),renderItems()}loadData(),renderAll(),setInterval(()=>{items.some(e=>e.endTime&&'watching'===e.status)&&renderItems()},1e3);
+  </script>
+</body>
+</html>
