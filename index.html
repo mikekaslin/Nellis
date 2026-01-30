@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +17,6 @@
     .search-bar { display: flex; gap: 8px; margin-bottom: 8px; }
     .search-bar input { flex: 1; }
     .price-row { display: flex; gap: 8px; }
-    .price-row input { width: 80px; }
     .price-row select { flex: 1; }
     input, select { background: #111827; border: 1px solid #374151; border-radius: 6px; padding: 10px 12px; color: white; font-size: 14px; }
     input:focus, select:focus { outline: none; border-color: #f97316; }
@@ -26,18 +26,12 @@
     .btn-orange:hover { background: #ea580c; }
     .btn-orange:disabled { background: #4b5563; cursor: not-allowed; }
     .btn-blue { background: #2563eb; color: white; }
-    .btn-blue:hover { background: #1d4ed8; }
     .btn-green { background: #16a34a; color: white; }
-    .btn-green:hover { background: #15803d; }
     .btn-red { background: #dc2626; color: white; }
-    .btn-red:hover { background: #b91c1c; }
     .btn-gray { background: #374151; color: white; }
-    .btn-gray:hover { background: #4b5563; }
     .btn-icon { padding: 8px; background: transparent; color: #9ca3af; }
-    .btn-icon:hover { color: #f87171; }
     .priority-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
     .chip { background: rgba(202, 138, 4, 0.2); border: 1px solid rgba(202, 138, 4, 0.5); color: #fde047; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; }
-    .chip:hover { background: rgba(202, 138, 4, 0.3); }
     .tabs { display: flex; gap: 4px; background: #1f2937; border-radius: 8px; padding: 4px; margin-bottom: 12px; }
     .tab { flex: 1; padding: 10px; border-radius: 6px; font-size: 12px; font-weight: 500; text-align: center; cursor: pointer; background: transparent; color: #9ca3af; }
     .tab.active { background: #f97316; color: white; }
@@ -84,7 +78,7 @@
     .action-row { display: flex; gap: 8px; }
     .action-row button { flex: 1; }
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 100; }
-    .modal { background: #1f2937; border-radius: 12px; padding: 20px; width: 100%; max-width: 360px; }
+    .modal { background: #1f2937; border-radius: 12px; padding: 20px; width: 100%; max-width: 360px; max-height: 90vh; overflow-y: auto; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .modal-header h2 { font-size: 18px; font-weight: bold; }
     .modal-close { background: none; border: none; color: #9ca3af; font-size: 24px; cursor: pointer; padding: 0; line-height: 1; }
@@ -97,32 +91,45 @@
     .fee-preview strong { color: #fb923c; }
     .empty { text-align: center; padding: 40px; color: #6b7280; }
     .hidden { display: none; }
+    .url-display { background: #111827; border-radius: 6px; padding: 8px; margin-top: 8px; font-size: 11px; color: #9ca3af; word-break: break-all; }
+    .tip { background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 12px; color: #93c5fd; }
+    .tip strong { color: #60a5fa; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>🧡 Nellis Tracker</h1>
+
+    <div class="tip" id="appTip">
+      <strong>💡 Tip:</strong> If links open in the Nellis app instead of Safari, <strong>long-press</strong> the Open button and choose "Open in Safari" or "Open in Browser"
+      <button onclick="document.getElementById('appTip').style.display='none'" style="float:right;background:none;border:none;color:#93c5fd;cursor:pointer;">✕</button>
+    </div>
+
     <div class="card">
       <div class="search-bar">
         <input type="text" id="quickSearch" placeholder="Search Nellis...">
         <button class="btn-orange" onclick="doQuickSearch()">🔍</button>
       </div>
       <div class="price-row">
-        <input type="number" id="quickMin" placeholder="$Min">
-        <input type="number" id="quickMax" placeholder="$Max">
         <select id="quickSort">
-          <option value="ending">Ending Soon</option>
-          <option value="newest">Newest</option>
-          <option value="priceLow">Price ↑</option>
-          <option value="priceHigh">Price ↓</option>
+          <option value="ending_asc">Ending Soon</option>
+          <option value="current_price_asc">Price (Low)</option>
+          <option value="current_price_desc">Price (High)</option>
+          <option value="bid_count_desc">Most Bids</option>
+          <option value="bid_count_asc">Least Bids</option>
+          <option value="retail_price_asc">Retail (Low)</option>
         </select>
       </div>
+      <div class="url-display" id="urlPreview">URL will appear here...</div>
     </div>
+
     <div class="priority-chips" id="priorityChips"></div>
+
     <div class="tabs">
       <div class="tab active" id="tabSearches" onclick="switchTab('searches')">🔍 Searches</div>
       <div class="tab" id="tabTracking" onclick="switchTab('tracking')">❤️ Tracking</div>
     </div>
+
     <div id="searchesTab">
       <div class="header-row">
         <div class="filters" id="categoryFilters"></div>
@@ -130,6 +137,7 @@
       </div>
       <div id="searchesList"></div>
     </div>
+
     <div id="trackingTab" class="hidden">
       <div class="stats" id="statsBar"></div>
       <div class="header-row">
@@ -139,6 +147,7 @@
       <div id="itemsList"></div>
     </div>
   </div>
+
   <div class="modal-overlay hidden" id="addSearchModal">
     <div class="modal">
       <div class="modal-header">
@@ -150,16 +159,33 @@
         <input type="text" id="newKeyword" placeholder="e.g., Milwaukee, Dyson">
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Min Price</label><input type="number" id="newMinPrice" placeholder="0"></div>
-        <div class="form-group"><label>Max Price</label><input type="number" id="newMaxPrice" placeholder="No limit"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Category</label><select id="newCategory"><option>Tools</option><option>Electronics</option><option>Appliances</option><option>Furniture</option><option>Outdoor</option><option>Pallets</option><option selected>Other</option></select></div>
-        <div class="form-group"><label>Sort By</label><select id="newSort"><option value="ending">Ending Soon</option><option value="newest">Newest</option><option value="priceLow">Price ↑</option><option value="priceHigh">Price ↓</option></select></div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="newCategory">
+            <option>Tools</option>
+            <option>Electronics</option>
+            <option>Appliances</option>
+            <option>Furniture</option>
+            <option>Outdoor</option>
+            <option>Pallets</option>
+            <option selected>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Sort By</label>
+          <select id="newSort">
+            <option value="ending_asc">Ending Soon</option>
+            <option value="current_price_asc">Price (Low)</option>
+            <option value="current_price_desc">Price (High)</option>
+            <option value="bid_count_desc">Most Bids</option>
+            <option value="bid_count_asc">Least Bids</option>
+          </select>
+        </div>
       </div>
       <button class="btn-orange" style="width:100%;padding:14px;" onclick="saveSearch()">Save Search</button>
     </div>
   </div>
+
   <div class="modal-overlay hidden" id="addItemModal">
     <div class="modal">
       <div class="modal-header">
@@ -175,13 +201,340 @@
         <div class="form-group"><label>Current Bid</label><input type="number" id="itemCurrentBid" placeholder="0"></div>
         <div class="form-group"><label>Your Max Bid *</label><input type="number" id="itemMaxBid" placeholder="100" oninput="updateFeePreview()"></div>
       </div>
-      <div class="fee-preview hidden" id="feePreview"><span>With fees: </span><strong id="feeTotal">$0.00</strong></div>
+      <div class="fee-preview hidden" id="feePreview"><span>With fees (15% + 8.25% tax): </span><strong id="feeTotal">$0.00</strong></div>
       <div class="form-group"><label>Auction End Time</label><input type="datetime-local" id="itemEndTime"></div>
       <button class="btn-orange" style="width:100%;padding:14px;" onclick="saveItem()">Add Item</button>
     </div>
   </div>
+
   <script>
-    const STORAGE_KEY='nellis-tracker-v2',BUYERS_PREMIUM=0.15,TAX_RATE=0.0825;let searches=[],items=[],categoryFilter='all',itemFilter='all';function loadData(){try{const e=localStorage.getItem(STORAGE_KEY);if(e){const t=JSON.parse(e);searches=t.searches||[],items=t.items||[]}else searches=[{id:1,keyword:'Milwaukee',minPrice:'',maxPrice:'150',category:'Tools',priority:!0,sort:'ending'},{id:2,keyword:'DeWalt',minPrice:'',maxPrice:'100',category:'Tools',priority:!0,sort:'ending'},{id:3,keyword:'pallet',minPrice:'',maxPrice:'250',category:'Pallets',priority:!1,sort:'priceLow'},{id:4,keyword:'Dyson',minPrice:'',maxPrice:'200',category:'Appliances',priority:!1,sort:'ending'}]}catch(e){console.error(e)}}function saveData(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({searches:searches,items:items}))}catch(e){console.error(e)}}function buildUrl(e,t,n,i){const s=new URLSearchParams;e&&s.set('searchVal',e),t&&s.set('minPrice',t),n&&s.set('maxPrice',n);const a={ending:'endingSoon',newest:'newest',priceLow:'priceLow',priceHigh:'priceHigh'};return i&&s.set('sort',a[i]||'endingSoon'),'https://www.nellisauction.com/search?'+s.toString()}function calcTotal(e){const t=e*BUYERS_PREMIUM,n=e+t;return n+n*TAX_RATE}function formatMoney(e){return'$'+e.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',')}function getTimeRemaining(e){const t=new Date(e).getTime()-Date.now();if(t<=0)return{text:'Ended',urgent:!1,expired:!0};const n=Math.floor(t/864e5),i=Math.floor(t%864e5/36e5),s=Math.floor(t%36e5/6e4),a=Math.floor(t%6e4/1e3);return n>0?{text:n+'d '+i+'h',urgent:!1}:i>0?{text:i+'h '+s+'m',urgent:i<2}:{text:s+'m '+a+'s',urgent:!0}}function doQuickSearch(){const e=document.getElementById('quickSearch').value.trim();if(!e)return;const t=document.getElementById('quickMin').value,n=document.getElementById('quickMax').value,i=document.getElementById('quickSort').value;window.open(buildUrl(e,t,n,i),'_blank')}document.getElementById('quickSearch').addEventListener('keydown',e=>{'Enter'===e.key&&doQuickSearch()});function switchTab(e){document.getElementById('tabSearches').classList.toggle('active','searches'===e),document.getElementById('tabTracking').classList.toggle('active','tracking'===e),document.getElementById('searchesTab').classList.toggle('hidden','searches'!==e),document.getElementById('trackingTab').classList.toggle('hidden','tracking'!==e)}function renderPriorityChips(){const e=document.getElementById('priorityChips'),t=searches.filter(e=>e.priority);e.innerHTML=t.map(e=>`<div class="chip" onclick="openSearchUrl(${e.id})">${e.keyword}${e.maxPrice?' ≤$'+e.maxPrice:''}</div>`).join('')}function renderCategoryFilters(){const e=[...new Set(searches.map(e=>e.category))],t=document.getElementById('categoryFilters');t.innerHTML=`<button class="filter ${'all'===categoryFilter?'active':''}" onclick="setCategoryFilter('all')">All</button>`+e.map(e=>`<button class="filter ${categoryFilter===e?'active':''}" onclick="setCategoryFilter('${e}')">${e}</button>`).join('')}function setCategoryFilter(e){categoryFilter=e,renderCategoryFilters(),renderSearches()}function renderSearches(){const e=searches.filter(e=>'all'===categoryFilter||e.category===categoryFilter).sort((e,t)=>(t.priority?1:0)-(e.priority?1:0)),t=document.getElementById('searchesList');0===e.length?t.innerHTML='<div class="empty">No searches yet. Tap ➕ to add one!</div>':t.innerHTML=e.map(e=>`<div class="search-item ${e.priority?'priority':''}"><div class="search-left"><span class="star ${e.priority?'active':''}" onclick="togglePriority(${e.id})">★</span><div><div class="search-name">${e.keyword}</div><div class="search-meta">${e.maxPrice?'≤$'+e.maxPrice+' • ':''}${e.category}</div></div></div><div class="search-right"><button class="btn-blue" onclick="openSearchUrl(${e.id})">Open</button><button class="btn-icon" onclick="deleteSearch(${e.id})">🗑</button></div></div>`).join('')}function openSearchUrl(e){const t=searches.find(t=>t.id===e);t&&window.open(buildUrl(t.keyword,t.minPrice,t.maxPrice,t.sort),'_blank')}function togglePriority(e){const t=searches.find(t=>t.id===e);t&&(t.priority=!t.priority,saveData(),renderAll())}function deleteSearch(e){searches=searches.filter(t=>t.id!==e),saveData(),renderAll()}function renderStats(){const e=items.filter(e=>'watching'===e.status).length,t=items.filter(e=>'won'===e.status).length,n=items.filter(e=>'lost'===e.status).length,i=items.filter(e=>'won'===e.status).reduce((e,t)=>e+calcTotal(t.currentBid),0);document.getElementById('statsBar').innerHTML=`<div class="stat"><div class="stat-value blue">${e}</div><div class="stat-label">Watch</div></div><div class="stat"><div class="stat-value green">${t}</div><div class="stat-label">Won</div></div><div class="stat"><div class="stat-value red">${n}</div><div class="stat-label">Lost</div></div><div class="stat"><div class="stat-value orange">$${Math.round(i)}</div><div class="stat-label">Spent</div></div>`}function renderItemFilters(){document.getElementById('itemFilters').innerHTML=['all','watching','won','lost'].map(e=>`<button class="filter ${itemFilter===e?'active':''}" onclick="setItemFilter('${e}')">${e.charAt(0).toUpperCase()+e.slice(1)}</button>`).join('')}function setItemFilter(e){itemFilter=e,renderItemFilters(),renderItems()}function renderItems(){const e=items.filter(e=>'all'===itemFilter||e.status===itemFilter),t=document.getElementById('itemsList');0===e.length?t.innerHTML='<div class="empty">No items yet. Find something on Nellis!</div>':t.innerHTML=e.map(e=>{const t=e.endTime?getTimeRemaining(e.endTime):null,n=calcTotal(e.currentBid),i=calcTotal(e.maxBid),s=e.currentBid<=e.maxBid;let a='item-card';return'won'===e.status?a+=' won':'lost'===e.status?a+=' lost':s||(a+=' over-budget'),`<div class="${a}"><div class="item-header"><div><div class="item-name">${e.name} ${'won'===e.status?'🏆':''}</div>${e.lotNumber?`<div class="item-lot">Lot #${e.lotNumber}</div>`:''}</div><div class="item-header-right">${t&&!t.expired&&'watching'===e.status?`<div class="time-badge ${t.urgent?'urgent':''}">⏱ ${t.text}</div>`:''}<button class="btn-icon" onclick="deleteItem(${e.id})">🗑</button></div></div><div class="bid-grid"><div class="bid-box"><div class="bid-label">Current Bid</div>${'watching'===e.status?`<input type="number" class="bid-input" value="${e.currentBid}" onchange="updateBid(${e.id}, this.value)">`:`<div class="bid-value">${formatMoney(e.currentBid)}</div>`}<div class="bid-total">Total: <span class="${s?'green':'red'}">${formatMoney(n)}</span></div></div><div class="bid-box"><div class="bid-label">Your Max</div><div class="bid-value orange">${formatMoney(e.maxBid)}</div><div class="bid-total">Total: ${formatMoney(i)}</div></div></div>${'watching'===e.status?`<div class="action-row"><button class="btn-green" onclick="setStatus(${e.id}, 'won')">Won</button><button class="btn-red" onclick="setStatus(${e.id}, 'lost')">Lost</button></div>`:`<button class="btn-gray" style="width:100%" onclick="setStatus(${e.id}, 'watching')">Back to Watching</button>`}</div>`}).join('')}function updateBid(e,t){const n=items.find(t=>t.id===e);n&&(n.currentBid=parseFloat(t)||0,saveData(),renderItems())}function setStatus(e,t){const n=items.find(t=>t.id===e);n&&(n.status=t,saveData(),renderAll())}function deleteItem(e){items=items.filter(t=>t.id!==e),saveData(),renderAll()}function openAddSearch(){document.getElementById('addSearchModal').classList.remove('hidden')}function closeAddSearch(){document.getElementById('addSearchModal').classList.add('hidden')}function openAddItem(){const e=document.getElementById('itemFromSearch');e.innerHTML='<option value="">None</option>'+searches.map(e=>`<option value="${e.keyword}">${e.keyword}</option>`).join(''),document.getElementById('addItemModal').classList.remove('hidden')}function closeAddItem(){document.getElementById('addItemModal').classList.add('hidden')}function saveSearch(){const e=document.getElementById('newKeyword').value.trim();if(!e)return alert('Please enter keywords');searches.push({id:Date.now(),keyword:e,minPrice:document.getElementById('newMinPrice').value,maxPrice:document.getElementById('newMaxPrice').value,category:document.getElementById('newCategory').value,sort:document.getElementById('newSort').value,priority:!1}),saveData(),renderAll(),closeAddSearch(),document.getElementById('newKeyword').value='',document.getElementById('newMinPrice').value='',document.getElementById('newMaxPrice').value=''}function updateFeePreview(){const e=parseFloat(document.getElementById('itemMaxBid').value)||0,t=document.getElementById('feePreview'),n=document.getElementById('feeTotal');e>0?(t.classList.remove('hidden'),n.textContent=formatMoney(calcTotal(e))):t.classList.add('hidden')}function saveItem(){const e=document.getElementById('itemName').value.trim(),t=parseFloat(document.getElementById('itemMaxBid').value);if(!e)return alert('Please enter item name');if(!t)return alert('Please enter max bid');items.push({id:Date.now(),name:e,lotNumber:document.getElementById('itemLot').value.trim(),fromSearch:document.getElementById('itemFromSearch').value,currentBid:parseFloat(document.getElementById('itemCurrentBid').value)||0,maxBid:t,endTime:document.getElementById('itemEndTime').value,status:'watching'}),saveData(),renderAll(),closeAddItem(),document.getElementById('itemName').value='',document.getElementById('itemLot').value='',document.getElementById('itemCurrentBid').value='',document.getElementById('itemMaxBid').value='',document.getElementById('itemEndTime').value='',document.getElementById('feePreview').classList.add('hidden')}function renderAll(){renderPriorityChips(),renderCategoryFilters(),renderSearches(),renderStats(),renderItemFilters(),renderItems()}loadData(),renderAll(),setInterval(()=>{items.some(e=>e.endTime&&'watching'===e.status)&&renderItems()},1e3);
+    const STORAGE_KEY = 'nellis-tracker-v3';
+    const BUYERS_PREMIUM = 0.15;
+    const TAX_RATE = 0.0825;
+
+    let searches = [];
+    let items = [];
+    let categoryFilter = 'all';
+    let itemFilter = 'all';
+
+    function buildUrl(keyword, sort) {
+      const base = 'https://www.nellisauction.com/search';
+      const params = new URLSearchParams();
+      if (keyword && keyword.trim()) params.set('query', keyword.trim());
+      if (sort) params.set('sortBy', sort);
+      return params.toString() ? base + '?' + params.toString() : base;
+    }
+
+    function updateUrlPreview() {
+      const keyword = document.getElementById('quickSearch').value;
+      const sort = document.getElementById('quickSort').value;
+      document.getElementById('urlPreview').textContent = buildUrl(keyword, sort);
+    }
+
+    document.getElementById('quickSearch').addEventListener('input', updateUrlPreview);
+    document.getElementById('quickSort').addEventListener('change', updateUrlPreview);
+
+    function loadData() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const data = JSON.parse(saved);
+          searches = data.searches || [];
+          items = data.items || [];
+        } else {
+          searches = [
+            { id: 1, keyword: 'Milwaukee', category: 'Tools', priority: true, sort: 'ending_asc' },
+            { id: 2, keyword: 'DeWalt', category: 'Tools', priority: true, sort: 'ending_asc' },
+            { id: 3, keyword: 'pallet', category: 'Pallets', priority: false, sort: 'current_price_asc' },
+            { id: 4, keyword: 'Dyson', category: 'Appliances', priority: false, sort: 'ending_asc' },
+          ];
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    function saveData() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ searches, items }));
+      } catch (e) { console.error(e); }
+    }
+
+    function calcTotal(bid) {
+      const premium = bid * BUYERS_PREMIUM;
+      const subtotal = bid + premium;
+      return subtotal + (subtotal * TAX_RATE);
+    }
+
+    function formatMoney(n) {
+      return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function getTimeRemaining(endTime) {
+      const diff = new Date(endTime).getTime() - Date.now();
+      if (diff <= 0) return { text: 'Ended', urgent: false, expired: true };
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      if (d > 0) return { text: d + 'd ' + h + 'h', urgent: false };
+      if (h > 0) return { text: h + 'h ' + m + 'm', urgent: h < 2 };
+      return { text: m + 'm ' + s + 's', urgent: true };
+    }
+
+    function doQuickSearch() {
+      const keyword = document.getElementById('quickSearch').value.trim();
+      if (!keyword) { alert('Enter a search term'); return; }
+      const sort = document.getElementById('quickSort').value;
+      window.open(buildUrl(keyword, sort), '_blank');
+    }
+
+    document.getElementById('quickSearch').addEventListener('keydown', e => {
+      if (e.key === 'Enter') doQuickSearch();
+    });
+
+    function switchTab(tab) {
+      document.getElementById('tabSearches').classList.toggle('active', tab === 'searches');
+      document.getElementById('tabTracking').classList.toggle('active', tab === 'tracking');
+      document.getElementById('searchesTab').classList.toggle('hidden', tab !== 'searches');
+      document.getElementById('trackingTab').classList.toggle('hidden', tab !== 'tracking');
+    }
+
+    function renderPriorityChips() {
+      const container = document.getElementById('priorityChips');
+      const priority = searches.filter(s => s.priority);
+      container.innerHTML = priority.map(s => 
+        `<div class="chip" onclick="openSearchUrl(${s.id})">${s.keyword}</div>`
+      ).join('');
+    }
+
+    function renderCategoryFilters() {
+      const cats = [...new Set(searches.map(s => s.category))];
+      const container = document.getElementById('categoryFilters');
+      container.innerHTML = `<button class="filter ${'all' === categoryFilter ? 'active' : ''}" onclick="setCategoryFilter('all')">All</button>` +
+        cats.map(c => `<button class="filter ${categoryFilter === c ? 'active' : ''}" onclick="setCategoryFilter('${c}')">${c}</button>`).join('');
+    }
+
+    function setCategoryFilter(f) {
+      categoryFilter = f;
+      renderCategoryFilters();
+      renderSearches();
+    }
+
+    function renderSearches() {
+      const filtered = searches.filter(s => categoryFilter === 'all' || s.category === categoryFilter)
+        .sort((a, b) => (b.priority ? 1 : 0) - (a.priority ? 1 : 0));
+      const container = document.getElementById('searchesList');
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty">No searches yet. Tap ➕ to add one!</div>';
+        return;
+      }
+      container.innerHTML = filtered.map(s => `
+        <div class="search-item ${s.priority ? 'priority' : ''}">
+          <div class="search-left">
+            <span class="star ${s.priority ? 'active' : ''}" onclick="togglePriority(${s.id})">★</span>
+            <div>
+              <div class="search-name">${s.keyword}</div>
+              <div class="search-meta">${s.category}</div>
+            </div>
+          </div>
+          <div class="search-right">
+            <button class="btn-blue" onclick="openSearchUrl(${s.id})">Open</button>
+            <button class="btn-icon" onclick="deleteSearch(${s.id})">🗑</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openSearchUrl(id) {
+      const s = searches.find(x => x.id === id);
+      if (s) window.open(buildUrl(s.keyword, s.sort), '_blank');
+    }
+
+    function togglePriority(id) {
+      const s = searches.find(x => x.id === id);
+      if (s) { s.priority = !s.priority; saveData(); renderAll(); }
+    }
+
+    function deleteSearch(id) {
+      searches = searches.filter(s => s.id !== id);
+      saveData();
+      renderAll();
+    }
+
+    function renderStats() {
+      const watching = items.filter(i => i.status === 'watching').length;
+      const won = items.filter(i => i.status === 'won').length;
+      const lost = items.filter(i => i.status === 'lost').length;
+      const spent = items.filter(i => i.status === 'won').reduce((sum, i) => sum + calcTotal(i.currentBid), 0);
+      document.getElementById('statsBar').innerHTML = `
+        <div class="stat"><div class="stat-value blue">${watching}</div><div class="stat-label">Watch</div></div>
+        <div class="stat"><div class="stat-value green">${won}</div><div class="stat-label">Won</div></div>
+        <div class="stat"><div class="stat-value red">${lost}</div><div class="stat-label">Lost</div></div>
+        <div class="stat"><div class="stat-value orange">$${Math.round(spent)}</div><div class="stat-label">Spent</div></div>
+      `;
+    }
+
+    function renderItemFilters() {
+      document.getElementById('itemFilters').innerHTML = ['all', 'watching', 'won', 'lost'].map(f =>
+        `<button class="filter ${itemFilter === f ? 'active' : ''}" onclick="setItemFilter('${f}')">${f.charAt(0).toUpperCase() + f.slice(1)}</button>`
+      ).join('');
+    }
+
+    function setItemFilter(f) {
+      itemFilter = f;
+      renderItemFilters();
+      renderItems();
+    }
+
+    function renderItems() {
+      const filtered = items.filter(i => itemFilter === 'all' || i.status === itemFilter);
+      const container = document.getElementById('itemsList');
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty">No items. Find something on Nellis!</div>';
+        return;
+      }
+      container.innerHTML = filtered.map(item => {
+        const time = item.endTime ? getTimeRemaining(item.endTime) : null;
+        const currentTotal = calcTotal(item.currentBid);
+        const maxTotal = calcTotal(item.maxBid);
+        const withinBudget = item.currentBid <= item.maxBid;
+        let cardClass = 'item-card';
+        if (item.status === 'won') cardClass += ' won';
+        else if (item.status === 'lost') cardClass += ' lost';
+        else if (!withinBudget) cardClass += ' over-budget';
+        return `
+          <div class="${cardClass}">
+            <div class="item-header">
+              <div>
+                <div class="item-name">${item.name} ${item.status === 'won' ? '🏆' : ''}</div>
+                ${item.lotNumber ? `<div class="item-lot">Lot #${item.lotNumber}</div>` : ''}
+              </div>
+              <div class="item-header-right">
+                ${time && !time.expired && item.status === 'watching' ? `<div class="time-badge ${time.urgent ? 'urgent' : ''}">⏱ ${time.text}</div>` : ''}
+                <button class="btn-icon" onclick="deleteItem(${item.id})">🗑</button>
+              </div>
+            </div>
+            <div class="bid-grid">
+              <div class="bid-box">
+                <div class="bid-label">Current Bid</div>
+                ${item.status === 'watching' 
+                  ? `<input type="number" class="bid-input" value="${item.currentBid}" onchange="updateBid(${item.id}, this.value)">`
+                  : `<div class="bid-value">${formatMoney(item.currentBid)}</div>`
+                }
+                <div class="bid-total">Total: <span class="${withinBudget ? 'green' : 'red'}">${formatMoney(currentTotal)}</span></div>
+              </div>
+              <div class="bid-box">
+                <div class="bid-label">Your Max</div>
+                <div class="bid-value orange">${formatMoney(item.maxBid)}</div>
+                <div class="bid-total">Total: ${formatMoney(maxTotal)}</div>
+              </div>
+            </div>
+            ${item.status === 'watching' ? `
+              <div class="action-row">
+                <button class="btn-green" onclick="setStatus(${item.id}, 'won')">Won</button>
+                <button class="btn-red" onclick="setStatus(${item.id}, 'lost')">Lost</button>
+              </div>
+            ` : `
+              <button class="btn-gray" style="width:100%" onclick="setStatus(${item.id}, 'watching')">Back to Watching</button>
+            `}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateBid(id, value) {
+      const item = items.find(i => i.id === id);
+      if (item) { item.currentBid = parseFloat(value) || 0; saveData(); renderItems(); }
+    }
+
+    function setStatus(id, status) {
+      const item = items.find(i => i.id === id);
+      if (item) { item.status = status; saveData(); renderAll(); }
+    }
+
+    function deleteItem(id) {
+      items = items.filter(i => i.id !== id);
+      saveData();
+      renderAll();
+    }
+
+    function openAddSearch() { document.getElementById('addSearchModal').classList.remove('hidden'); }
+    function closeAddSearch() { document.getElementById('addSearchModal').classList.add('hidden'); }
+    
+    function openAddItem() {
+      const select = document.getElementById('itemFromSearch');
+      select.innerHTML = '<option value="">None</option>' + searches.map(s => `<option value="${s.keyword}">${s.keyword}</option>`).join('');
+      document.getElementById('addItemModal').classList.remove('hidden');
+    }
+    function closeAddItem() { document.getElementById('addItemModal').classList.add('hidden'); }
+
+    function saveSearch() {
+      const keyword = document.getElementById('newKeyword').value.trim();
+      if (!keyword) { alert('Please enter keywords'); return; }
+      searches.push({
+        id: Date.now(),
+        keyword,
+        category: document.getElementById('newCategory').value,
+        sort: document.getElementById('newSort').value,
+        priority: false
+      });
+      saveData();
+      renderAll();
+      closeAddSearch();
+      document.getElementById('newKeyword').value = '';
+    }
+
+    function updateFeePreview() {
+      const maxBid = parseFloat(document.getElementById('itemMaxBid').value) || 0;
+      const preview = document.getElementById('feePreview');
+      const total = document.getElementById('feeTotal');
+      if (maxBid > 0) {
+        preview.classList.remove('hidden');
+        total.textContent = formatMoney(calcTotal(maxBid));
+      } else {
+        preview.classList.add('hidden');
+      }
+    }
+
+    function saveItem() {
+      const name = document.getElementById('itemName').value.trim();
+      const maxBid = parseFloat(document.getElementById('itemMaxBid').value);
+      if (!name) { alert('Please enter item name'); return; }
+      if (!maxBid) { alert('Please enter max bid'); return; }
+      items.push({
+        id: Date.now(),
+        name,
+        lotNumber: document.getElementById('itemLot').value.trim(),
+        fromSearch: document.getElementById('itemFromSearch').value,
+        currentBid: parseFloat(document.getElementById('itemCurrentBid').value) || 0,
+        maxBid,
+        endTime: document.getElementById('itemEndTime').value,
+        status: 'watching'
+      });
+      saveData();
+      renderAll();
+      closeAddItem();
+      document.getElementById('itemName').value = '';
+      document.getElementById('itemLot').value = '';
+      document.getElementById('itemCurrentBid').value = '';
+      document.getElementById('itemMaxBid').value = '';
+      document.getElementById('itemEndTime').value = '';
+      document.getElementById('feePreview').classList.add('hidden');
+    }
+
+    function renderAll() {
+      renderPriorityChips();
+      renderCategoryFilters();
+      renderSearches();
+      renderStats();
+      renderItemFilters();
+      renderItems();
+      updateUrlPreview();
+    }
+
+    loadData();
+    renderAll();
+    setInterval(() => { if (items.some(i => i.endTime && i.status === 'watching')) renderItems(); }, 1000);
   </script>
 </body>
 </html>
+```
